@@ -4,6 +4,7 @@
 #include "link.h"
 #include "serdes/abstract/struct.h"
 #include "serdes/concrete/format/msgpack.h"
+#include "hash/hash.h"
 
 /*
 TODO: tuple equivalence up to permutations to pass args out of order to server
@@ -21,13 +22,15 @@ template<typename format, typename wbuffer, typename rbuffer>
 struct serdes<format, wbuffer, rbuffer, A> : struct_serdes<format, wbuffer, rbuffer, A> {};
 }
 
+STRUCT_HASH(A)
+
 struct B {
   A a_in_b;
 };
 
 // support serialization of B with macro
 STRUCT_SERDES(B)
-
+STRUCT_HASH(B)
 
 // Objects to hadle RPC
 struct Obj1 {
@@ -53,6 +56,9 @@ struct Obj2 {
         return t;
     }
 };
+
+SET_HASH(Obj1, 1)
+SET_HASH(Obj2, 2)
 
 int main()
 {

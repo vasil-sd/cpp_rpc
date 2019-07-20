@@ -14,7 +14,7 @@ struct serdes<format, wbuffer, rbuffer, std::tuple<TupleArgs...>, tl<Arg, Rest..
        serdes<format, wbuffer, rbuffer,std::tuple<TupleArgs...>, tl<Rest...>, tl<Prev..., Arg>> {
     using next = serdes<format, wbuffer, rbuffer, std::tuple<TupleArgs...>, tl<Rest...>, tl<Prev..., Arg>>;
     template<int N>
-    static void serialize_(const std::tuple<TupleArgs...>& tuple, size_t sz, const ser_handler<wbuffer>& handler, writer<wbuffer> process) {
+    static void serialize_(const std::tuple<TupleArgs...>& tuple, size_t sz, const ser_handler<wbuffer>& handler, const writer<wbuffer>& process) {
         serdes<format, wbuffer, rbuffer, Arg>::serialize(std::get<N>(tuple), [&](size_t new_sz, const writer<wbuffer>& fn){
             next::template serialize_<N+1>(tuple, sz + new_sz, handler, [&](wbuffer& buf){
                 process(buf);
@@ -30,7 +30,7 @@ struct serdes<format, wbuffer, rbuffer, std::tuple<TupleArgs...>, tl<Arg, Rest..
 template<typename format, typename wbuffer, typename rbuffer, typename...TupleArgs>
 struct serdes<format, wbuffer, rbuffer, std::tuple<TupleArgs...>, tl<>, tl<TupleArgs...>> {
     template<int>
-    static void serialize_(const std::tuple<TupleArgs...>&, size_t sz, const ser_handler<wbuffer>& handler, writer<wbuffer> process) {
+    static void serialize_(const std::tuple<TupleArgs...>&, size_t sz, const ser_handler<wbuffer>& handler, const writer<wbuffer>& process) {
         handler(sz, [&](wbuffer& buf){
             process(buf);
         });

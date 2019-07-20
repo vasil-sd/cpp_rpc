@@ -2,6 +2,7 @@
 
 #include <type_traits>
 #include <tuple>
+#include "hash/hash.h"
 
 namespace {
 
@@ -49,6 +50,7 @@ struct method : public method_info {
     using class_type = decltype(method_class(member));
     using result_type = decltype(method_result(member));    
     using args_type = decltype(method_args_as_tuple(member));
+    constexpr static hash::UI64 signature_hash = hash::type_hash<std::tuple<class_type, result_type, args_type>>::value;
 
     static result_type call(class_type& obj, args_type&& args) {
         return call_method(obj, member, std::move(args));
