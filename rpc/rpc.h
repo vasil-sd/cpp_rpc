@@ -4,7 +4,7 @@
 
 #include "meta/dedup.h"
 #include "meta/idx.h"
-
+#include "meta/conv.h"
 #include <memory>
 #include <functional>
 #include <tuple>
@@ -48,7 +48,8 @@ struct rpc {
 
     template<class link, typename ... Objects>
     static server_ptr make_server(link& lnk, Objects&&... objs) {
-        auto srv = std::make_shared<server>(std::tuple{std::move(objs)...});
+        using conv = meta::tuple::converter<std::tuple<Objects...>, objects>;
+        auto srv = std::make_shared<server>(conv::convert(std::tuple{std::move(objs)...}));
         (typename server::template register_cb<0, link, methods...>){}(lnk, *srv);
         return srv;
     }

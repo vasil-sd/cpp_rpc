@@ -6,22 +6,13 @@
 #include "serdes/concrete/format/msgpack.h"
 #include "hash/hash.h"
 
-/*
-TODO: tuple equivalence up to permutations to pass args out of order to server
-*/
-
 // structures to pass around
 struct A {
   int val_i;
   std::string val_s;
 };
 
-namespace serdes {
-// support serialization of A, not using macro
-template<typename format, typename wbuffer, typename rbuffer>
-struct serdes<format, wbuffer, rbuffer, A> : struct_serdes<format, wbuffer, rbuffer, A> {};
-}
-
+STRUCT_SERDES(A)
 STRUCT_HASH(A)
 
 struct B {
@@ -57,6 +48,9 @@ struct Obj2 {
     }
 };
 
+// Classes of objects which process calls should have a hash
+// because calls are dispatched via hashes of whole signatures of methods,
+// including class: hash(class, result, arguments)
 SET_HASH(Obj1, 1)
 SET_HASH(Obj2, 2)
 
@@ -82,9 +76,13 @@ int main()
     link<serdes::format::msgpack> l{};
 
     // make rpc server
+    // you should pass all objects, which participate in rpc
     auto srv = rpc_ab::make_server(l, Obj1{}, Obj2{});
+    // note: order of passing objects is irrelevant
+    // this is accepted too: 
+    //   auto srv = rpc_ab::make_server(l, Obj2{}, Obj1{});
 
-    // make rpc client
+    // make an rpc client
     auto client = rpc_ab::make_client(std::move(l));
 
     // note: in general case there is no guarantee on order of
