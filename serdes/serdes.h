@@ -4,33 +4,33 @@
 
 namespace serdes {
 
-template<typename wbuffer>
-using writer = std::function<void(wbuffer&)>;
-template<typename wbuffer>
-using ser_handler = std::function<void(size_t, const writer<wbuffer>&)>;
+template<typename buffer>
+using writer = std::function<void(buffer&)>;
+template<typename buffer>
+using ser_handler = std::function<void(size_t, const writer<buffer>&)>;
 
-template<typename format, typename wbuffer, typename rbuffer, typename Val, typename...T>
+template<typename format, typename buffer, typename Val, typename...T>
 struct serdes {
     // to thow undefined ref to function on link stage
     // because linker message more easy to understand
-    static void serialize(const Val&, const ser_handler<wbuffer>& handler);
-    static Val deserialize(rbuffer&);
+    static void serialize(const Val&, const ser_handler<buffer>& handler);
+    static Val deserialize(buffer&);
 };
 
-template<typename fmt, typename wbuffer, typename T>
-wbuffer serialize(const T& t) {
-    wbuffer result;
-    serdes<fmt, wbuffer, wbuffer, T>::serialize(t, [&](size_t sz, const writer<wbuffer>& wr){
-        wbuffer buf{sz};
+template<typename fmt, typename buffer, typename T>
+buffer serialize(const T& t) {
+    buffer result;
+    serdes<fmt, buffer, T>::serialize(t, [&](size_t sz, const writer<buffer>& wr){
+        buffer buf{sz};
         wr(buf);
         result = std::move(buf);
     });
     return std::move(result);
 }
 
-template<typename fmt, typename T, typename rbuffer>
-T deserialize(rbuffer& buf) {
-    return serdes<fmt, rbuffer, rbuffer, T>::deserialize(buf);
+template<typename fmt, typename T, typename buffer>
+T deserialize(buffer& buf) {
+    return serdes<fmt, buffer, T>::deserialize(buf);
 }
 
 } // namespace serdes

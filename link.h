@@ -10,23 +10,25 @@
 
 template<class format>
 struct link {
-  std::unordered_map<unsigned long long, std::function<buffer(wbuffer&&)>> callbacks;
+  std::unordered_map<unsigned long long, std::function<buffer(buffer&&)>> callbacks;
   template<unsigned long long N, typename Result, typename Args>
   void on_receive(std::function<Result(Args&&)>&& handler) {
       std::cout << "HASH = " << N << std::endl;
       callbacks.emplace(N, [handler=std::move(handler)](buffer&& b) -> buffer {
-          rbuffer rbuf = std::move(b);
+          buffer rbuf = std::move(b);
+          rbuf.rewind();
           Args args = serdes::deserialize<format, Args>(rbuf);
           Result result = handler(std::move(args));
-          wbuffer wbuf = serdes::serialize<format, wbuffer>(result);
+          buffer wbuf = serdes::serialize<format, buffer>(result);
           return std::move(wbuf);
       }); 
   }
   template<unsigned long long N, typename Result, typename Args>
-  void send_async(Args&& args, const std::function<void(Result&&)>& handler) {
-      wbuffer wbuf = serdes::serialize<format, wbuffer>(args);
+  void send_async(Args&& args, std::function<void(Result&&)>&& handler) {
+      buffer wbuf = serdes::serialize<format, buffer>(args);
       auto cb = callbacks.at(N);
-      rbuffer rbuf{cb(std::move(wbuf))};
+      buffer rbuf{cb(std::move(wbuf))};
+      rbuf.rewind();
       handler(serdes::deserialize<format, Result>(rbuf));
   }
 };

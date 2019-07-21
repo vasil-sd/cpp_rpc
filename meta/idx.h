@@ -8,7 +8,9 @@ template<typename T, int n, typename... Ts>
 struct type_idx_;
 
 template<typename T, int n, typename t, typename... Ts>
-struct type_idx_<T, n, t, Ts...> : type_idx_<T, n+1, Ts...> {};
+struct type_idx_<T, n,   t, Ts...> :
+       type_idx_<T, n+1, Ts...>
+{ };
 
 template<typename T, int n, typename... Ts>
 struct type_idx_<T, n, T, Ts...> {
@@ -16,7 +18,7 @@ struct type_idx_<T, n, T, Ts...> {
 };
 
 template<typename T, typename... Ts>
-struct type_idx : type_idx_<T, 0, Ts...> {};
+struct type_idx : type_idx_<T, 0, Ts...> { };
 
 }
 }

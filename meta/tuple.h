@@ -4,39 +4,44 @@
 
 namespace meta {
 
-namespace {
-template <class T, class... TArgs> decltype(void(T{std::declval<TArgs>()...}), std::true_type{}) test_is_braces_constructible(int);
-template <class, class...> std::false_type test_is_braces_constructible(...);
-template <class T, class... TArgs> using is_braces_constructible = decltype(test_is_braces_constructible<T, TArgs...>(0));
+namespace tuple {
 
-struct any_type {
+namespace {
+
+template <typename T, typename... TArgs>
+decltype(void(T{std::declval<TArgs>()...}), std::true_type{}) test_is_braces_constructible(int);
+
+template <typename, typename...> std::false_type test_is_braces_constructible(...);
+
+template <typename T, typename... TArgs>
+using is_braces_constructible = decltype(test_is_braces_constructible<T, TArgs...>(0));
+
+struct any {
   template<class T>
   constexpr operator T(); // non explicit
 };
 
 } // namespace anonymous
 
-namespace tuple {
-
 template<class T>
 auto to_tuple(T&& object) noexcept {
     using type = std::decay_t<T>;
-    if constexpr(is_braces_constructible<type, any_type, any_type, any_type, any_type, any_type, any_type>{}) {
+    if constexpr(is_braces_constructible<type, any, any, any, any, any, any>{}) {
       auto&& [p1, p2, p3, p4, p5, p6] = object;
       return std::make_tuple(p1, p2, p3, p4, p5, p6);
-    } else if constexpr(is_braces_constructible<type, any_type, any_type, any_type, any_type, any_type>{}) {
+    } else if constexpr(is_braces_constructible<type, any, any, any, any, any>{}) {
       auto&& [p1, p2, p3, p4, p5] = object;
       return std::make_tuple(p1, p2, p3, p4, p5);
-    } else if constexpr(is_braces_constructible<type, any_type, any_type, any_type, any_type>{}) {
+    } else if constexpr(is_braces_constructible<type, any, any, any, any>{}) {
       auto&& [p1, p2, p3, p4] = object;
       return std::make_tuple(p1, p2, p3, p4);
-    } else if constexpr(is_braces_constructible<type, any_type, any_type, any_type>{}) {
+    } else if constexpr(is_braces_constructible<type, any, any, any>{}) {
       auto&& [p1, p2, p3] = object;
       return std::make_tuple(p1, p2, p3);
-    } else if constexpr(is_braces_constructible<type, any_type, any_type>{}) {
+    } else if constexpr(is_braces_constructible<type, any, any>{}) {
       auto&& [p1, p2] = object;
       return std::make_tuple(p1, p2);
-    } else if constexpr(is_braces_constructible<type, any_type>{}) {
+    } else if constexpr(is_braces_constructible<type, any>{}) {
       auto&& [p1] = object;
       return std::make_tuple(p1);
     } else {
@@ -71,5 +76,4 @@ T from_tuple(std::tuple<Args...>&& tuple) noexcept {
 }
 
 } // namespace tuple
-
 } // namespace meta

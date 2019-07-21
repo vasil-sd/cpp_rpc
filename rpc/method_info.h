@@ -22,7 +22,8 @@ class method_info {
 public:
 
     template <typename R, typename Class, typename... T>
-    static std::tuple<typename std::decay<T>::type...> method_args_as_tuple(R (Class::*)(T...));
+    static std::tuple<typename std::decay<T>::type...>
+        method_args_as_tuple(R (Class::*)(T...));
 
     template <typename R, typename Class, typename... T>
     static R method_result(R (Class::*)(T...));

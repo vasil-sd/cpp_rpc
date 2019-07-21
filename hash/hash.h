@@ -46,17 +46,23 @@ template <typename...>
 struct type_hash_tup_;
 
 template<typename T, typename...Ts, typename ...Ts1>
-struct type_hash_tup_<std::tuple<Ts1...>, std::tuple<T, Ts...>> : type_hash_tup_<std::tuple<Ts1...>, std::tuple<Ts...>>{
+struct type_hash_tup_<std::tuple<Ts1...>, std::tuple<T, Ts...>> :
+       type_hash_tup_<std::tuple<Ts1...>, std::tuple<Ts...>>
+{
     using next = type_hash_tup_<std::tuple<Ts1...>, std::tuple<Ts...>>;
     constexpr static UI64 value = 
         (calc_hash<meta::type_list::type_idx<T, Ts1...>::idx + 1>::value * type_hash<T>::value) ^ next::value;
 };
 
 template<typename ...Ts1>
-struct type_hash_tup_<std::tuple<Ts1...>, std::tuple<>> : calc_hash<0x55AA> {};
+struct type_hash_tup_<std::tuple<Ts1...>, std::tuple<>> :
+       calc_hash<0x55AA>
+{ };
 
 template<typename... Ts>
-struct type_hash<std::tuple<Ts...>> : type_hash_tup_<std::tuple<Ts...>, std::tuple<Ts...>> {};
+struct type_hash<std::tuple<Ts...>> :
+       type_hash_tup_<std::tuple<Ts...>, std::tuple<Ts...>>
+{ };
 
 
 //===========================================
